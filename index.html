@@ -136,7 +136,7 @@
                 let html = "";
                 for (let i = 0; i < data.length; i++) {
                     html += `
-                    <div class="col-3 mt-2">
+                    <div class="col-3 mt-2" onclick="displaySelected(this)" item-index='${i}'  >
 
                         <div class="card">
                            <img src="${data[i].flags.png}" class="card-img-top">
@@ -151,6 +151,18 @@
                     `;
                 }
                 document.querySelector("#neigborCountries").innerHTML = html;
+            }
+
+            function displaySelected(item) {
+                let allNeighbors = document.querySelectorAll(".col-3 h6");
+
+                for (let i = 0; i < allNeighbors.length; i++) {
+                    if (item.getAttribute("item-index") == i) {
+                        document.querySelector("#textSearch").value =
+                            allNeighbors[i].innerHTML;
+                        return getCountry(allNeighbors[i].innerHTML);
+                    }
+                }
             }
         </script>
     </body>
