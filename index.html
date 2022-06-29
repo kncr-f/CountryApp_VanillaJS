@@ -12,14 +12,50 @@
         />
 
         <title>Country App</title>
+        <style>
+            .col-3 img {
+                height: 120px;
+            }
+        </style>
     </head>
     <body>
-        <div class="container my-3">
-            <div class="row"></div>
+        <div class="container my-5">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="textSearch"
+                            class="form-control"
+                        />
+                        <button
+                            id="btnSearch"
+                            type="button"
+                            class="btn btn-primary"
+                        >
+                            Install
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3" id="country-details"></div>
+            <div class="card mb-3">
+                <div class="card-header">Neighbor Countries</div>
+                <div class="card-body">
+                    <div class="row" id="neigborCountries"></div>
+                </div>
+            </div>
         </div>
 
         <script>
-            function displayCountry(country) {
+            document
+                .querySelector("#btnSearch")
+                .addEventListener("click", () => {
+                    let textValue = document.querySelector("#textSearch").value;
+                    getCountry(textValue);
+                });
+
+            function getCountry(country) {
                 const request = new XMLHttpRequest();
                 request.open(
                     "GET",
@@ -31,7 +67,8 @@
 
                 request.addEventListener("load", function () {
                     const data = JSON.parse(this.responseText);
-                    setCountry(data);
+
+                    renderCountry(data[0]);
 
                     //load neighbors
 
@@ -44,43 +81,77 @@
                     req.send();
                     req.addEventListener("load", function () {
                         const data = JSON.parse(this.responseText);
-                        setCountry(data);
+                        renderNeighbors(data);
                     });
                 });
             }
-            function setCountry(data) {
-                for (let country of data) {
-                    const html = `
+            function renderCountry(data) {
+                let html = `
+
+                    <div class="card-header">Results</div>
+                    <div class="card-body">
+                        <div class="row">
                             <div class="col-4">
-                                <div class="card h-100">
-                                    <img src="${
-                                        country.flags.png
-                                    }" class="card-img-top">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${
-                                            country.name.common
-                                        }</h5>
-                                    </div>
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item">Population: ${(
-                                            country.population / 1000000
-                                        ).toFixed(1)}</li>
-                                         <li class="list-group-item">Capital: ${
-                                             country.capital[0]
-                                         }</li>
-                                         <li class="list-group-item">Language: ${Object.values(
-                                             country.languages
-                                         )} </li>
-                                    </ul>
+                                <img src="${
+                                    data.flags.png
+                                }" alt="" class="img-fluid" />
+                            </div>
+                            <div class="col-8">
+                                <h3 class="card-title">${data.name.common}</h3>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-4">Population:</div>
+                                    <div class="col-8">
+                                         ${(data.population / 1000000).toFixed(
+                                             1
+                                         )}
+                                        </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">Language:</div>
+                                    <div class="col-8">${Object.values(
+                                        data.languages
+                                    )}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">Capital:</div>
+                                    <div class="col-8">${data.capital[0]}</div>
+                                </div>
+
+                                  <div class="row">
+                                    <div class="col-4">Currency:</div>
+                                    <div class="col-8">${Object.keys(
+                                        data.currencies
+                                    )}</div>
                                 </div>
                             </div>
-                            `;
-                    document
-                        .querySelector(".container .row")
-                        .insertAdjacentHTML("beforeend", html);
-                }
+                        </div>
+                    </div>
+                `;
+
+                document.querySelector("#country-details").innerHTML = html;
             }
-            displayCountry("Germany");
+
+            function renderNeighbors(data) {
+                let html = "";
+                for (let i = 0; i < data.length; i++) {
+                    html += `
+                    <div class="col-3 mt-2">
+
+                        <div class="card">
+                           <img src="${data[i].flags.png}" class="card-img-top">
+                           <div class="card-body">
+
+                            <h6 class="card-title">${data[i].name.common}</h6>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    `;
+                }
+                document.querySelector("#neigborCountries").innerHTML = html;
+            }
         </script>
     </body>
 </html>
