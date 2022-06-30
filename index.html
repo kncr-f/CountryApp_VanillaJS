@@ -16,10 +16,15 @@
             .col-3 img {
                 height: 120px;
             }
+            #details {
+                opacity: 0;
+            }
         </style>
     </head>
     <body>
         <div class="container my-5">
+            <h1>Find Neighbors</h1>
+            <div id="errors"></div>
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="input-group">
@@ -27,6 +32,7 @@
                             type="text"
                             id="textSearch"
                             class="form-control"
+                            placeholder="type a country"
                         />
                         <button
                             id="btnSearch"
@@ -38,11 +44,18 @@
                     </div>
                 </div>
             </div>
-            <div class="card mb-3" id="country-details"></div>
-            <div class="card mb-3">
-                <div class="card-header">Neighbor Countries</div>
-                <div class="card-body">
-                    <div class="row" id="neigborCountries"></div>
+            <div id="details">
+                <div class="card mb-3">
+                    <div class="card-header">Results</div>
+                    <div class="card-body">
+                        <div class="row" id="country-details"></div>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-header">Neighbor Countries</div>
+                    <div class="card-body">
+                        <div class="row" id="neigborCountries"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -52,29 +65,41 @@
                 .querySelector("#btnSearch")
                 .addEventListener("click", () => {
                     let textValue = document.querySelector("#textSearch").value;
+                    document.querySelector("#details").style.opacity = 0;
                     getCountry(textValue);
                 });
 
             function getCountry(country) {
                 // promise version
                 fetch(`https://restcountries.com/v3.1/name/${country}`)
-                    .then((response) => response.json())
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("No country with this name");
+                        }
+                        return response.json();
+                    })
                     .then((data) => {
                         renderCountry(data[0]);
-                        const neighborCountries = data[0].borders.toString();
+
+                        const neighborCountries = data[0].borders;
+                        if (!neighborCountries) {
+                            throw new Error(
+                                `${data[0].name.common} does not have any neighbor country`
+                            );
+                        }
+
                         return fetch(
-                            `https://restcountries.com/v3.1/alpha?codes=${neighborCountries}`
+                            `https://restcountries.com/v3.1/alpha?codes=${neighborCountries.toString()}`
                         );
                     })
                     .then((response) => response.json())
-                    .then((data) => renderNeighbors(data));
+                    .then((data) => renderNeighbors(data))
+                    .catch((err) => renderError(err));
             }
             function renderCountry(data) {
+                document.querySelector("#country-details").innerHTML = "";
+                document.querySelector("#neigborCountries").innerHTML = "";
                 let html = `
-
-                    <div class="card-header">Results</div>
-                    <div class="card-body">
-                        <div class="row">
                             <div class="col-4">
                                 <img src="${
                                     data.flags.png
@@ -111,10 +136,9 @@
                 })</div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                     
                 `;
-
+                document.querySelector("#details").style.opacity = 1;
                 document.querySelector("#country-details").innerHTML = html;
             }
 
@@ -137,6 +161,18 @@
                     `;
                 }
                 document.querySelector("#neigborCountries").innerHTML = html;
+            }
+
+            function renderError(err) {
+                const html = `
+                <div class="alert alert-danger">
+                    ${err.message}
+                    </div>
+                `;
+                setTimeout(() => {
+                    document.querySelector("#errors").innerHTML = "";
+                }, 3000);
+                document.querySelector("#errors").innerHTML = html;
             }
 
             function displaySelected(item) {
