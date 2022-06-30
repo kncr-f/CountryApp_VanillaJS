@@ -69,32 +69,33 @@
                     getCountry(textValue);
                 });
 
-            function getCountry(country) {
-                // promise version
-                fetch(`https://restcountries.com/v3.1/name/${country}`)
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error("No country with this name");
-                        }
-                        return response.json();
-                    })
-                    .then((data) => {
-                        renderCountry(data[0]);
+            async function getCountry(country) {
+                //async & await version
+                try {
+                    const response = await fetch(
+                        `https://restcountries.com/v3.1/name/${country}`
+                    );
+                    if (!response.ok) {
+                        throw new Error("No country with this name");
+                    }
 
-                        const neighborCountries = data[0].borders;
-                        if (!neighborCountries) {
-                            throw new Error(
-                                `${data[0].name.common} does not have any neighbor country`
-                            );
-                        }
+                    const data = await response.json();
+                    renderCountry(data[0]);
 
-                        return fetch(
-                            `https://restcountries.com/v3.1/alpha?codes=${neighborCountries.toString()}`
+                    const neighborCountries = data[0].borders;
+                    if (!neighborCountries) {
+                        throw new Error(
+                            `${data[0].name.common} does not have any neighbor country`
                         );
-                    })
-                    .then((response) => response.json())
-                    .then((data) => renderNeighbors(data))
-                    .catch((err) => renderError(err));
+                    }
+                    const response2 = await fetch(
+                        `https://restcountries.com/v3.1/alpha?codes=${neighborCountries.toString()}`
+                    );
+                    const data2 = await response2.json();
+                    renderNeighbors(data2);
+                } catch (err) {
+                    renderError(err);
+                }
             }
             function renderCountry(data) {
                 document.querySelector("#country-details").innerHTML = "";
@@ -136,7 +137,7 @@
                 })</div>
                                 </div>
                             </div>
-                     
+
                 `;
                 document.querySelector("#details").style.opacity = 1;
                 document.querySelector("#country-details").innerHTML = html;
