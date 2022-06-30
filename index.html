@@ -26,6 +26,9 @@
             #details {
                 opacity: 0;
             }
+            #loading {
+                display: none;
+            }
         </style>
     </head>
     <body>
@@ -59,6 +62,9 @@
                     </div>
                 </div>
             </div>
+            <div id="loading" class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
             <div id="details">
                 <div class="card mb-3">
                     <div class="card-header">Results</div>
@@ -81,6 +87,7 @@
                 .addEventListener("click", () => {
                     let textValue = document.querySelector("#textSearch").value;
                     document.querySelector("#details").style.opacity = 0;
+                    document.querySelector("#loading").style.display = "block";
                     getCountry(textValue);
                 });
 
@@ -92,10 +99,13 @@
                             onSuccess,
                             onError
                         );
+                        document.querySelector("#loading").style.display =
+                            "block";
                     }
                 });
             function onError(err) {
                 console.log(err);
+                document.querySelector("#loading").style.display = "none";
             }
 
             async function onSuccess(position) {
@@ -127,6 +137,7 @@
                     }
 
                     const data = await response.json();
+
                     renderCountry(data[0]);
 
                     const neighborCountries = data[0].borders;
@@ -145,6 +156,7 @@
                 }
             }
             function renderCountry(data) {
+                document.querySelector("#loading").style.display = "none";
                 document.querySelector("#country-details").innerHTML = "";
                 document.querySelector("#neigborCountries").innerHTML = "";
                 let html = `
@@ -212,6 +224,8 @@
             }
 
             function renderError(err) {
+                document.querySelector("#loading").style.display = "none";
+
                 const html = `
                 <div class="alert alert-danger">
                     ${err.message}
